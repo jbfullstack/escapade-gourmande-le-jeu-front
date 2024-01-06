@@ -10,7 +10,6 @@ function App() {
   const [visiblePrize, setVisiblePrize] = useState(null);
   const prizes = ['Un café', 'Un dessert du chef', 'Une salade', 'Un poulpe frais'];
   const SERVER_URL = 'http://127.0.0.1:3000/turn-the-wheel';
-  
 
   useEffect(() => {
     if (spinning) {
@@ -59,7 +58,7 @@ function App() {
       <h3>Participez pour un petit cadeau lors de votre prochaine visite!</h3>
       <img src={wheelImage} alt="Wheel Image" style={{ width: '100%', maxWidth: '400px', margin: '20px 0' }} />
       
-      {spinning ? (
+      {spinning && spinResult !== -1 ? (
         <div>
           <p>Traitement en cours...</p>
           {/* Animation pour afficher le prix actuel */}
