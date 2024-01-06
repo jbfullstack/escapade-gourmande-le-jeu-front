@@ -40,6 +40,12 @@ button:hover {
   background-color: #45a049;
 }
 
+button:disabled {
+  background-color: #ddd; /* Couleur de fond grise */
+  color: #888; /* Couleur du texte grise */
+  cursor: not-allowed; /* Curseur non autorisé */
+}
+
 .PrizeAnimation {
   opacity: 0;
   transform: translateY(20px);

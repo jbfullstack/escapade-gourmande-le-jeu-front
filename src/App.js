@@ -8,6 +8,7 @@ function App() {
   const [spinning, setSpinning] = useState(false);
   const [animationIndex, setAnimationIndex] = useState(0);
   const [visiblePrize, setVisiblePrize] = useState(null);
+  const [serverResponded, setServerResponded] = useState(false);
   const prizes = ['Un café', 'Un dessert du chef', 'Une salade', 'Un poulpe frais'];
   const SERVER_URL = 'http://127.0.0.1:3000/turn-the-wheel';
 
@@ -34,6 +35,7 @@ function App() {
   const spinWheel = async () => {
     setSpinning(true);
     setSpinResult(null); // Réinitialise le résultat du spin
+    setServerResponded(true); // Indique que le serveur a répondu
     try {
       const response = await axios.get(SERVER_URL);
       const result = response.data;
@@ -70,7 +72,9 @@ function App() {
         </div>
       ) : (
         <div>
-          <button onClick={spinWheel}>Cliquez pour jouer</button>
+          <button onClick={spinWheel} disabled={serverResponded}>
+            Cliquez pour jouer
+          </button>
           {spinResult !== null && (
             <p>
             {spinResult === -1
