@@ -15,8 +15,8 @@ function App() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState(null);
   const prizes = ['Un café', 'Un dessert du chef', 'Une salade', 'Un poulpe frais'];
-  const SERVER_URL = 'http://127.0.0.1:3000/turn-the-wheel';
-  // const SERVER_URL = 'https://escapade-gourmande-le-jeu-back.vercel.app/turn-the-wheel';
+  // const SERVER_URL = 'http://127.0.0.1:3000/turn-the-wheel';
+  const SERVER_URL = 'https://escapade-gourmande-le-jeu-back.vercel.app/turn-the-wheel';
   
 
   useEffect(() => {
