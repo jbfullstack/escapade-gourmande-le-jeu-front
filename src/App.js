@@ -3,6 +3,8 @@ import axios from 'axios';
 import Confetti from 'react-confetti'; // Assurez-vous d'importer le bon composant
 import './App.css';
 import wheelImage from './taureau.jpeg';
+import html2canvas from 'html2canvas';
+import QRCode from 'qrcode.react';
 
 function App() {
   const [spinResult, setSpinResult] = useState(null);
@@ -11,9 +13,10 @@ function App() {
   const [visiblePrize, setVisiblePrize] = useState(null);
   const [serverResponded, setServerResponded] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [currentDateTime, setCurrentDateTime] = useState(null);
   const prizes = ['Un café', 'Un dessert du chef', 'Une salade', 'Un poulpe frais'];
-  // const SERVER_URL = 'http://127.0.0.1:3000/turn-the-wheel';
-  const SERVER_URL = 'https://escapade-gourmande-le-jeu-back.vercel.app/turn-the-wheel';
+  const SERVER_URL = 'http://127.0.0.1:3000/turn-the-wheel';
+  // const SERVER_URL = 'https://escapade-gourmande-le-jeu-back.vercel.app/turn-the-wheel';
   
 
   useEffect(() => {
@@ -29,7 +32,10 @@ function App() {
           } else {
             clearInterval(interval);
             setSpinning(false);
-            setShowConfetti(spinResult >= 0); 
+            if ( spinResult >= 0) {
+              setCurrentDateTime(new Date())
+              setShowConfetti(true)
+            }
             return prevIndex;
           }
         });
@@ -60,10 +66,26 @@ function App() {
     }
   };
 
+  const handleCaptureScreen = () => {   
+    setShowConfetti(false); 
+    // timeout to remove confetti on screen
+    setTimeout(() => { 
+      const element = document.getElementById('App'); // Replace 'capture' with the ID of the element you want to capture
+    
+      html2canvas(element).then((canvas) => {
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL();
+        link.download = `escapade-gourmande-bon-cadeau-${new Date().toUTCString()}.png`;
+        link.click();
+      });
+    }, 200);
+  };
+
   return (
-    <div className="App">
+    <div className="App" id='App'>
       <h1>Escapade Gourmande</h1>
       <h3>Participez pour un petit cadeau lors de votre prochaine visite!</h3>
+      
       <img src={wheelImage} alt="Wheel Image" style={{ width: '100%', maxWidth: '400px', margin: '20px 0' }} />
       
       {spinning && spinResult !== -1 ? (
@@ -86,11 +108,30 @@ function App() {
               {spinResult === -1
                 ? `Désolée, vous n'êtes pas autorisé à participer plusieurs fois dans la même journée.`
                 : <span dangerouslySetInnerHTML={{ __html: `Vous avez remporté : <strong>${prizes[spinResult]}</strong>!` }} />}
+              
+            </p>
+           
+          )}
+
+          {spinResult !== null && spinResult > -1 && currentDateTime !== null && (            
+            <p className='dateTime'>
+             {currentDateTime.toLocaleString()}
             </p>
           )}
+
+          {spinResult !== null && spinResult > -1 && (
+            <div>
+              <QRCode id='qr-code' value={currentDateTime.toUTCString() + ' - ' + prizes[spinResult]} />
+              <span dangerouslySetInnerHTML={{ __html: `</br>` }} />
+              <button onClick={handleCaptureScreen}>Télécharger le bon cadeau</button>
+            </div>
+          )}
+
+
           {/* Effet confetti */}
-          {showConfetti && <Confetti />}
+          {spinResult !== null && spinResult > -1 && showConfetti && <Confetti />}
         </div>
+        
       )}
     </div>
   );

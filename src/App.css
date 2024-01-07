@@ -52,6 +52,13 @@ button:disabled {
   animation: showPrize 1s ease forwards;
 }
 
+.dateTime {
+  font-size: 12px;
+  font-weight: bold;
+  color: rgb(20, 26, 105); /* Text color */
+  margin-top: 10px;
+}
+
 @keyframes showPrize {
   to {
     opacity: 1;
