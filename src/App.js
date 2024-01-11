@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Confetti from 'react-confetti'; // Assurez-vous d'importer le bon composant
 import './App.css';
-import wheelImage from './taureau.jpeg';
+import PromoBanner from './components/PromoBanner/PromoBanner';
+import SpinButton from './components/SpinButton/SpinButton';
+import SpinResultMessage from './components/SpinResultMessage/SpinResultMessage';
 import html2canvas from 'html2canvas';
-import QRCode from 'qrcode.react';
+import QRCodeDisplay from './components/QRCodeDisplay/QRCodeDisplay';
 
 function App() {
   const [spinResult, setSpinResult] = useState(null);
@@ -14,33 +16,38 @@ function App() {
   const [serverResponded, setServerResponded] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState(null);
+
   const prizes = process.env.REACT_APP_PRIZE_LIST.split(',');
   const SERVER_URL = process.env.REACT_APP_NESTJS_SERVER_URL;
+
+  const confettiEffectDuration = 5000;
   
 
   useEffect(() => {
-    if (spinning) {
+    if (!spinning) {   
       setAnimationIndex(0);
       setVisiblePrize(null);
-      setShowConfetti(false);
+    } else {
+      const updatePrizeDisplay = (prevIndex) => {
+        if (prevIndex < prizes.length) {
+          setVisiblePrize(prizes[prevIndex]);
+          return prevIndex + 1;
+        } else {
+          handleAnimationEnd();
+          return 0; // No increment after reaching the end
+        }
+      };
+
+      const handleAnimationEnd = () => {
+        clearInterval(interval);
+        setSpinning(false);
+        setCurrentDateTime(new Date());    
+      };
+
       const interval = setInterval(() => {
-        setAnimationIndex((prevIndex) => {
-          if (prevIndex < prizes.length) {
-            setVisiblePrize(prizes[prevIndex]);
-            return prevIndex + 1;
-          } else {
-            clearInterval(interval);
-            setSpinning(false);
-            setShowConfetti(spinResult >= 0)
-            if ( spinResult >= 0) {
-              setCurrentDateTime(new Date())              
-            }
-            return prevIndex;
-          }
-        });
+        setAnimationIndex(updatePrizeDisplay);
       }, 1000);
-      return () => clearInterval(interval);
-    }
+    } 
   }, [spinning]);
 
   useEffect(() => {
@@ -56,83 +63,69 @@ function App() {
     setSpinning(true);
     setSpinResult(null);    
     try {
-      console.log(`SERVER_URL: ${SERVER_URL}`)
       const response = await axios.get(SERVER_URL);
-      console.log(`response: ${JSON.stringify(response)}`)
       const result = response.data.generatedNumber;
       setSpinResult(result);
+      if (result > -1) {
+        const timeout = setTimeout(() => {
+        setShowConfetti(true);
+        clearTimeout(timeout);
+        }, confettiEffectDuration);
+      }
       setServerResponded(true);
     } catch (error) {
       console.error('Error spinning the wheel:', error);
     }
   };
 
-  const handleCaptureScreen = () => {   
+  const downloadVoucher = () => {   
     setShowConfetti(false); 
     // timeout to remove confetti on screen
     setTimeout(() => { 
-      const element = document.getElementById('Voucher'); // Replace 'capture' with the ID of the element you want to capture
+      const element = document.getElementById('Voucher'); 
     
       html2canvas(element).then((canvas) => {
         const link = document.createElement('a');
         link.href = canvas.toDataURL();
-        link.download = `escapade-gourmande-bon-cadeau-${new Date().toUTCString()}.png`;
+        link.download = `escapade-gourmande-voucher-${new Date().toUTCString()}.png`;
         link.click();
       });
     }, 200);
   };
 
   return (
-    <div className="App" id='Voucher'>
-      <h1>L'escapade Gourmande</h1>
-      <h3>Participez pour un petit cadeau lors de votre prochaine visite!</h3>
-      
-      <img src={wheelImage} alt="Wheel Image" style={{ width: '100%', maxWidth: '400px', margin: '20px 0' }} />
-      
+    <div className="App" id='Voucher'>     
+
+      { showConfetti && ( <Confetti /> )}
+      <PromoBanner showHeadline={spinResult === null || (spinning && spinResult !== null && spinResult > -1)}/>
+          
       {spinning && spinResult !== -1 ? (
-        <div>
-          <p>Traitement en cours...</p>
-          {/* Animation pour afficher le prix actuel */}
+        <figure>
+          <figcaption>Traitement en cours...</figcaption>
           {visiblePrize && (
             <div key={animationIndex} className="PrizeAnimation">
               {visiblePrize}
             </div>
           )}
-        </div>
+        </figure>      
       ) : (
-        <div >
-          <button onClick={spinWheel} disabled={serverResponded} className={serverResponded ? 'disabled' : ''}>
-            Cliquez pour jouer
-          </button>
-          {spinResult !== null && (
-            <p>
-              {spinResult === -1
-                ? `Désolée, vous n'êtes pas autorisé à participer plusieurs fois dans la même journée.`
-                : <span dangerouslySetInnerHTML={{ __html: `Vous avez remporté : <strong>${prizes[spinResult]}</strong>!` }} />}
-              
-            </p>
-           
+
+        <section>
+          {spinResult === null ? (
+            <SpinButton onClick={spinWheel} isDisabled={serverResponded} />
+          ) : (
+            <article>
+              <SpinResultMessage result={spinResult} prizes={prizes} /> 
+              {spinResult > -1 && (
+                <aside>
+                  <time className='dateTime'>{currentDateTime.toLocaleString()}</time>
+                  <QRCodeDisplay dateTime={currentDateTime} prize={prizes[spinResult]} />
+                  <button onClick={downloadVoucher}>Télécharger le bon cadeau</button>
+                </aside>
+              )}               
+            </article>
           )}
-
-          {spinResult !== null && spinResult > -1 && currentDateTime !== null && (            
-            <p className='dateTime'>
-             {currentDateTime.toLocaleString()}
-            </p>
-          )}
-
-          {spinResult !== null && spinResult > -1 && (
-            <div>
-              <QRCode id='qr-code' value={currentDateTime.toUTCString() + ' - ' + prizes[spinResult]} />
-              <span dangerouslySetInnerHTML={{ __html: `</br>` }} />
-              <button onClick={handleCaptureScreen}>Télécharger le bon cadeau</button>
-            </div>
-          )}
-
-
-          {/* Effet confetti */}
-          {spinResult !== null && spinResult > -1 && showConfetti && <Confetti />}
-        </div>
-        
+        </section> 
       )}
     </div>
   );

@@ -17,13 +17,6 @@ body {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-h1 {
-  color: #ff5722;
-}
-
-h3 {
-  color: #2196f3;
-}
 
 button {
   background-color: #4caf50;
@@ -66,7 +59,4 @@ button:disabled {
   }
 }
 
-p {
-  margin-top: 20px;
-  font-size: 18px;
-}
+

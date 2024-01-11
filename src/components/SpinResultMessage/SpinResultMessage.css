@@ -1,0 +1,14 @@
+/* Success Message Styles */
+.success {
+    color: green;
+    font-weight: bold; 
+    margin-top: 10px;
+  }
+  
+  /* Notification Message Styles */
+  .notification {
+    color: #333;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+  

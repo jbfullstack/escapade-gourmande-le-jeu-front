@@ -1,0 +1,23 @@
+#promo-banner {
+  text-align: center;
+  padding: 20px;
+}
+
+#promo-banner .title {
+  color: #ff5722;
+  font-size: 2em; 
+  margin-bottom: 15px;
+}
+
+#promo-banner .main-image {
+  max-width: 100%;
+  height: auto; 
+  margin: 0 auto; 
+}
+
+#promo-banner .head-line {
+  color: #2196f3;
+  font-weight: bold;
+  margin-top: 20px; 
+  /* font-style: italic; */
+}
