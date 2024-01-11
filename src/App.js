@@ -14,9 +14,8 @@ function App() {
   const [serverResponded, setServerResponded] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState(null);
-  const prizes = ['Un café', 'Un dessert du chef', 'Une salade', 'Un poulpe frais'];
-  // const SERVER_URL = 'http://127.0.0.1:3000/turn-the-wheel';
-  const SERVER_URL = 'https://escapade-gourmande-le-jeu-back.vercel.app/turn-the-wheel';
+  const prizes = process.env.REACT_APP_PRIZE_LIST.split(',');
+  const SERVER_URL = process.env.REACT_APP_NESTJS_SERVER_URL;
   
 
   useEffect(() => {
@@ -32,9 +31,9 @@ function App() {
           } else {
             clearInterval(interval);
             setSpinning(false);
+            setShowConfetti(spinResult >= 0)
             if ( spinResult >= 0) {
-              setCurrentDateTime(new Date())
-              setShowConfetti(true)
+              setCurrentDateTime(new Date())              
             }
             return prevIndex;
           }
@@ -57,8 +56,10 @@ function App() {
     setSpinning(true);
     setSpinResult(null);    
     try {
+      console.log(`SERVER_URL: ${SERVER_URL}`)
       const response = await axios.get(SERVER_URL);
-      const result = response.data;
+      console.log(`response: ${JSON.stringify(response)}`)
+      const result = response.data.generatedNumber;
       setSpinResult(result);
       setServerResponded(true);
     } catch (error) {
@@ -70,7 +71,7 @@ function App() {
     setShowConfetti(false); 
     // timeout to remove confetti on screen
     setTimeout(() => { 
-      const element = document.getElementById('App'); // Replace 'capture' with the ID of the element you want to capture
+      const element = document.getElementById('Voucher'); // Replace 'capture' with the ID of the element you want to capture
     
       html2canvas(element).then((canvas) => {
         const link = document.createElement('a');
@@ -82,8 +83,8 @@ function App() {
   };
 
   return (
-    <div className="App" id='App'>
-      <h1>Escapade Gourmande</h1>
+    <div className="App" id='Voucher'>
+      <h1>L'escapade Gourmande</h1>
       <h3>Participez pour un petit cadeau lors de votre prochaine visite!</h3>
       
       <img src={wheelImage} alt="Wheel Image" style={{ width: '100%', maxWidth: '400px', margin: '20px 0' }} />
@@ -99,7 +100,7 @@ function App() {
           )}
         </div>
       ) : (
-        <div>
+        <div >
           <button onClick={spinWheel} disabled={serverResponded} className={serverResponded ? 'disabled' : ''}>
             Cliquez pour jouer
           </button>
