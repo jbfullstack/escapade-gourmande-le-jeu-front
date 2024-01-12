@@ -7,8 +7,10 @@ import SpinButton from './components/SpinButton/SpinButton';
 import SpinResultMessage from './components/SpinResultMessage/SpinResultMessage';
 import html2canvas from 'html2canvas';
 import QRCodeDisplay from './components/QRCodeDisplay/QRCodeDisplay';
+import ConditionsLine from './components/ConditionsLine/ConditionsLine';
 
 function App() {
+  const [voucherId, setVoucherId] = useState(null);
   const [spinResult, setSpinResult] = useState(null);
   const [spinning, setSpinning] = useState(false);
   const [animationIndex, setAnimationIndex] = useState(0);
@@ -19,7 +21,8 @@ function App() {
 
   const prizes = "Un café, Un dessert du chef, Une salade, Un poulpe frais".split(',');
   // const prizes = process.env.REACT_APP_PRIZE_LIST.split(',');
-  const SERVER_URL = "https://escapade-gourmande-le-jeu-back.vercel.app/turn-the-wheel";
+  // const SERVER_URL = "https://escapade-gourmande-le-jeu-back.vercel.app/turn-the-wheel";
+  const SERVER_URL = "http://127.0.0.1:3000/turn-the-wheel";
   // const SERVER_URL = process.env.REACT_APP_NESTJS_SERVER_URL;
   
 
@@ -65,11 +68,14 @@ function App() {
   const spinWheel = async () => {
     setSpinning(true);
     setSpinResult(null);    
+    setVoucherId(null);
     try {
       const response = await axios.get(SERVER_URL);
       const result = response.data.generatedNumber;
-      setSpinResult(result);
+      const voucherId = response.data.voucherId;
+      setSpinResult(result);      
       if (result > -1) {
+        setVoucherId(voucherId);
         const timeout = setTimeout(() => {
         setShowConfetti(true);
         clearTimeout(timeout);
@@ -97,10 +103,11 @@ function App() {
   };
 
   return (
-    <div className="App" id='Voucher'>     
+    <div className="App" id='Voucher'>   
 
+   
       { showConfetti && ( <Confetti /> )}
-      <PromoBanner showHeadline={spinResult === null || (spinning && spinResult !== null && spinResult > -1)}/>
+      <PromoBanner/>
           
       {spinning && spinResult !== -1 ? (
         <figure>
@@ -109,27 +116,29 @@ function App() {
             <div key={animationIndex} className="PrizeAnimation">
               {visiblePrize}
             </div>
-          )}
-        </figure>      
+          )} 
+        </figure>
       ) : (
 
         <section>
           {spinResult === null ? (
             <SpinButton onClick={spinWheel} isDisabled={serverResponded} />
           ) : (
-            <article>
-              <SpinResultMessage result={spinResult} prizes={prizes} /> 
+            <article>                            
+              <SpinResultMessage result={spinResult} prizes={prizes}/> 
               {spinResult > -1 && (
                 <aside>
-                  <time className='dateTime'>{currentDateTime.toLocaleString()}</time>
-                  <QRCodeDisplay dateTime={currentDateTime} prize={prizes[spinResult]} />
                   <button onClick={downloadVoucher}>Télécharger le bon cadeau</button>
+                  <br/>
+                  <ConditionsLine display={!spinning} />
+                  <time className='dateTime'>{currentDateTime.toLocaleString()}</time>
+                  <QRCodeDisplay dateTime={currentDateTime} prize={prizes[spinResult]} voucherId={voucherId}/>                  
                 </aside>
               )}               
             </article>
-          )}
+          )}         
         </section> 
-      )}
+      )}      
     </div>
   );
 }
