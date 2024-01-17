@@ -19,14 +19,14 @@ function App() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState(null);
 
-  const prizes = "Un café, Un dessert du chef, Une salade, Un poulpe frais".split(',');
+  const prizes = "Un café, Un soda, Une sangria, Un dessert du jour, Un poivron de piquillo, Une tortilla de chorizo".split(',');
   // const prizes = process.env.REACT_APP_PRIZE_LIST.split(',');
   const SERVER_URL = "https://escapade-gourmande-le-jeu-back.vercel.app/turn-the-wheel";
   // const SERVER_URL = "http://127.0.0.1:3000/turn-the-wheel";
   // const SERVER_URL = process.env.REACT_APP_NESTJS_SERVER_URL;
   
 
-  const confettiEffectDuration = 5000;
+  const durationBeforeConfettiEffect = (prizes.length + 1 ) * 1000;
   
 
   useEffect(() => {
@@ -79,7 +79,7 @@ function App() {
         const timeout = setTimeout(() => {
         setShowConfetti(true);
         clearTimeout(timeout);
-        }, confettiEffectDuration);
+        }, durationBeforeConfettiEffect);
       }
       setServerResponded(true);
     } catch (error) {
